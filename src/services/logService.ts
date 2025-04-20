@@ -38,7 +38,7 @@ export class LogService {
     }
 
     /**
-     * Streams logs by request ID and sends it to the client through the res.write() method.
+     * Streams logs by request ID and sends it to the client using res.write() method.
      * @param req - Express request
      * @param res - Express response
      */
@@ -47,7 +47,7 @@ export class LogService {
         console.log(`Streaming logs for request ID: ${requestId}`);
 
         // Set appropriate headers for streaming
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Transfer-Encoding', 'chunked');
 
         // Start the response with an opening bracket for a JSON array

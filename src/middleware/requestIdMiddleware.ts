@@ -9,7 +9,7 @@ export function requestIdMiddleware(req: Request, res: Response, next: NextFunct
     // Attach request ID to request object
     req.requestId = requestId;
 
-    // Set request ID in response header
+    // Set request ID in the response header for easy testing
     res.setHeader('X-Request-ID', requestId);
 
     next();

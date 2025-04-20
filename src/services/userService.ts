@@ -28,6 +28,7 @@ export class UserService {
     /**
      * Get user by ID
      * @param id - User ID
+     * @param logger
      * @returns User object or null if not found
      */
     getUserById(id: string, logger: Logger): UserDTO | null {
@@ -37,8 +38,9 @@ export class UserService {
 
     /**
      * Create a new user
-     * @param userData - User data
      * @returns Created user
+     * @param userDTO
+     * @param logger
      */
     createUser(userDTO: UserDTO, logger: Logger): UserDTO {
         logger.info(`Creating new user`);
@@ -49,6 +51,7 @@ export class UserService {
      * Update an existing user
      * @param id - User ID
      * @param userData - User data to update
+     * @param logger
      * @returns Updated user or null if not found
      */
     updateUser(id: string, userData: Partial<UserDTO>, logger: Logger): UserDTO | null {
@@ -59,6 +62,7 @@ export class UserService {
     /**
      * Delete a user
      * @param id - User ID
+     * @param logger
      * @returns True if deleted, false if not found
      */
     deleteUser(id: string, logger: Logger): boolean {

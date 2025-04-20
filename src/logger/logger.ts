@@ -35,7 +35,7 @@ export interface LogData {
 
 /**
  * Ensuring that the log content is in correct JSON format
- * this will avoid losing data during serialization.
+ * this will prevent losing data during serialization.
  */
 type JsonSerializable =
     | string

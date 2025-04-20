@@ -22,9 +22,8 @@ export class UserDTO {
     }
 
     /**
-     * Create a UserDTO from request body
+     * Create a UserDTO from CreateUserRequestBody
      * @param reqBody - Request body containing user data
-     * @param id - Optional ID, will generate a new one if not provided
      * @returns New UserDTO instance
      */
     static fromRequest(reqBody: CreateUserRequestBody): UserDTO {
