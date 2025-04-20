@@ -1,39 +1,30 @@
 import fs from 'fs';
 import path from 'path';
 import { createObjectCsvWriter } from 'csv-writer';
-import { Readable } from 'stream';
-import {Request} from "express";
 
-// Logger configuration
-const LOG_FILE_PATH = path.join(__dirname, '../../logs/application_logs.csv');
-
-// Ensure logs directory exists
-if (!fs.existsSync(path.dirname(LOG_FILE_PATH))) {
-    fs.mkdirSync(path.dirname(LOG_FILE_PATH), { recursive: true });
+export const LOG_FILE_PATH = path.join(__dirname, '../../logs/application_logs.csv');
+const logDir = path.dirname(LOG_FILE_PATH);
+const logFileExists = fs.existsSync(logDir);
+if (!logFileExists) {
+    fs.mkdirSync(logDir, { recursive: true });
 }
 
-// Initialize CSV Writer
 const csvWriter = createObjectCsvWriter({
     path: LOG_FILE_PATH,
     header: [
-        { id: 'requestId', title: 'REQUEST_ID' },
-        { id: 'endpointPath', title: 'ENDPOINT_PATH' },
-        { id: 'logLevel', title: 'LOG_LEVEL' },
-        { id: 'timestamp', title: 'TIMESTAMP' },
-        { id: 'logContent', title: 'LOG_CONTENT' }
+        { id: 'requestId', title: 'requestId' },
+        { id: 'endpointPath', title: 'endpointPath' },
+        { id: 'logLevel', title: 'logLevel' },
+        { id: 'timestamp', title: 'timestamp' },
+        { id: 'logContent', title: 'logContent' }
     ],
-    append: true
+    append: logFileExists
 });
-
-// Write CSV headers if file doesn't exist
-if (!fs.existsSync(LOG_FILE_PATH)) {
-    csvWriter.writeRecords([]);
-}
 
 // Define log levels type
 export type LogLevel = 'DEBUG' | 'INFO' | 'ACCESS' | 'ERROR';
 
-// Define log data interface
+// Define log structure
 export interface LogData {
     requestId: string;
     endpointPath: string;
@@ -46,8 +37,8 @@ export interface LogData {
  * Logger class for request-scoped logging
  */
 export class RequestLogger {
-    private requestId: string;
-    private endpointPath: string;
+    private readonly requestId: string;
+    private readonly endpointPath: string;
     private disableLogging: boolean;
 
     /**
@@ -102,6 +93,7 @@ export class RequestLogger {
      * @param metadata - Additional metadata or Error object to include
      */
     error(message: string, metadata: Record<string, any> | Error = {}): void {
+        // todo this can be improved
         // Handle Error objects to avoid losing data during serialization
         if (metadata instanceof Error) {
             metadata = {
@@ -137,86 +129,6 @@ export class RequestLogger {
         // Write to CSV file
         csvWriter.writeRecords([logData])
             .catch(error => console.error('Error writing log:', error));
-    }
-
-    /**
-     * Static method to get all logs by request ID
-     * @param requestId - Request ID to filter logs
-     * @returns Promise<LogData[]> - Array of matching logs
-     */
-    static async getLogsByRequestId(requestId: string): Promise<LogData[]> {
-        // If log file doesn't exist, return empty array
-        if (!fs.existsSync(LOG_FILE_PATH)) {
-            return [];
-        }
-
-        try {
-            // Read the entire file into memory
-            const fileContent = await fs.promises.readFile(LOG_FILE_PATH, 'utf8');
-            const lines = fileContent.split('\n');
-            const logs: LogData[] = [];
-
-            for (const rawLine of lines) {
-                const line = rawLine.trim();
-
-                // Skip empty lines or header
-                if (!line || line.startsWith('REQUEST_ID,')) continue;
-
-                // Parse CSV line into fields
-                const [id, path, level, timestamp, content] = this.parseCSVLine(line);
-
-                // If it matches the requestId, add to results
-                if (id === requestId) {
-                    logs.push({
-                        requestId: id,
-                        endpointPath: path,
-                        logLevel: level as LogLevel,
-                        timestamp,
-                        logContent: content,
-                    });
-                }
-            }
-
-            return logs;
-        } catch (err) {
-            // todo handle all exceptions
-            throw err;
-        }
-    }
-
-    /**
-     * Parse a CSV line into its components
-     * @param line - CSV line to parse
-     * @returns Array of parsed values
-     * @private
-     */
-    private static parseCSVLine(line: string): string[] {
-        // Simple CSV parsing implementation
-        const result: string[] = [];
-        let inQuotes = false;
-        let currentField = '';
-
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-
-            if (char === '"') {
-                inQuotes = !inQuotes;
-                continue;
-            }
-
-            if (char === ',' && !inQuotes) {
-                result.push(currentField);
-                currentField = '';
-                continue;
-            }
-
-            currentField += char;
-        }
-
-        // Add the last field
-        result.push(currentField);
-
-        return result;
     }
 }
 

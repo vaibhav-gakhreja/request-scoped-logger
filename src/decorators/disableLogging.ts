@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 /**
- * Decorator factory that returns a method decorators to disable logging for a specific route handler
+ * Decorator to disable logging for a specific route handler
  * @returns Method decorators function
  */
 export function DisableLogging() {

@@ -11,9 +11,6 @@ export class UserDTO {
     createdAt: string;
     updatedAt: string;
 
-    /**
-     * Create a new UserDTO instance
-     */
     constructor(id: string, name: string, email: string, role: string = 'user') {
         this.id = id;
         this.name = name;
