@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { UserService } from '../services/userService';
 import { DisableLogging } from '../decorators/disableLogging';
+import {UserDTO} from "../dto/userDto";
+import {CreateUserRequestBody} from "../dto/createUserRequestBody";
 
 /**
  * Controller for User entity endpoints
@@ -39,7 +41,7 @@ export class UserController {
     getAllUsers(req: Request, res: Response): void {
         try {
             req.logger.debug('Fetching all users');
-            const users = this.userService.getAllUsers();
+            const users = this.userService.getAllUsers(req.logger);
             req.logger.info(`Retrieved ${users.length} users`);
             res.json(users);
         } catch (error) {
@@ -58,7 +60,7 @@ export class UserController {
             const { id } = req.params;
             req.logger.debug(`Fetching user by ID: ${id}`);
 
-            const user = this.userService.getUserById(id);
+            const user = this.userService.getUserById(id, req.logger);
 
             if (!user) {
                 req.logger.info(`User not found with ID: ${id}`);
@@ -78,17 +80,10 @@ export class UserController {
      * @param req - Express request
      * @param res - Express response
      */
-    createUser(req: Request, res: Response): void {
+    createUser(req: Request<{}, {}, CreateUserRequestBody>, res: Response): void {
         try {
             req.logger.debug('Creating new user', { bodySize: JSON.stringify(req.body).length });
-
-            if (!req.body.name || !req.body.email) {
-                req.logger.info('Invalid user data provided', { body: req.body });
-                res.status(400).json({ error: 'Name and email are required' });
-            }
-
-            const newUser = this.userService.createUser(req.body);
-
+            const newUser = this.userService.createUser(UserDTO.fromRequest(req.body), req.logger);
             req.logger.info(`Created new user: ${newUser.id}`);
             res.status(201).json(newUser);
         } catch (error) {
@@ -107,7 +102,7 @@ export class UserController {
             const { id } = req.params;
             req.logger.debug(`Updating user ${id}`, { bodySize: JSON.stringify(req.body).length });
 
-            const updatedUser = this.userService.updateUser(id, req.body);
+            const updatedUser = this.userService.updateUser(id, req.body, req.logger);
 
             if (!updatedUser) {
                 req.logger.info(`User not found for update: ${id}`);
@@ -132,7 +127,7 @@ export class UserController {
             const { id } = req.params;
             req.logger.debug(`Deleting user ${id}`);
 
-            const deleted = this.userService.deleteUser(id);
+            const deleted = this.userService.deleteUser(id, req.logger);
 
             if (!deleted) {
                 req.logger.info(`User not found for deletion: ${id}`);
@@ -160,7 +155,7 @@ export class UserController {
             // These logs should not appear in the log file due to @DisableLogging
             req.logger.debug(`Silent fetching user by ID: ${id}`);
 
-            const user = this.userService.getUserById(id);
+            const user = this.userService.getUserById(id, req.logger);
 
             if (!user) {
                 res.status(404).json({ error: 'User not found' });

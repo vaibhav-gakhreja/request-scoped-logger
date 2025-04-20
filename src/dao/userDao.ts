@@ -1,5 +1,6 @@
 import { UserDTO } from '../dto/userDto';
 import { v4 as uuidv4 } from 'uuid';
+import RequestLogger from "../logger/logger";
 
 /**
  * Data Access Object for User entity
@@ -26,27 +27,33 @@ export class UserDAO {
 
     /**
      * Find all users
+     * @param logger
      * @returns Array of users
      */
-    findAll(): UserDTO[] {
+    findAll(logger: RequestLogger): UserDTO[] {
+        logger.debug(`Fetching all users`);
         return Array.from(this.users.values());
     }
 
     /**
      * Find user by ID
      * @param id - User ID
+     * @param logger
      * @returns User object or null if not found
      */
-    findById(id: string): UserDTO | null {
+    findById(id: string, logger: RequestLogger): UserDTO | null {
+        logger.debug(`Fetching user by ID: ${id}`);
         return this.users.get(id) || null;
     }
 
     /**
      * Create a new user
      * @param user - User data
+     * @param logger
      * @returns Created user
      */
-    create(user: UserDTO): UserDTO {
+    create(user: UserDTO, logger: RequestLogger): UserDTO {
+        logger.debug(`Creating new user`);
         this.users.set(user.id, user);
         return user;
     }
@@ -55,16 +62,18 @@ export class UserDAO {
      * Update an existing user
      * @param id - User ID
      * @param userData - User data to update
+     * @param logger
      * @returns Updated user or null if not found
      */
-    update(id: string, userData: Partial<UserDTO>): UserDTO | null {
+    update(id: string, userData: Partial<UserDTO>, logger: RequestLogger): UserDTO | null {
+        logger.debug(`Updating user ${id}`);
         const existingUser = this.users.get(id);
         if (!existingUser) return null;
 
         const updatedUser = {
             ...existingUser,
             ...userData,
-            id: existingUser.id, // Ensure ID doesn't change
+            id: existingUser.id,
             updatedAt: new Date().toISOString()
         };
 
@@ -75,9 +84,11 @@ export class UserDAO {
     /**
      * Delete a user
      * @param id - User ID
+     * @param logger
      * @returns True if deleted, false if not found
      */
-    delete(id: string): boolean {
+    delete(id: string, logger: RequestLogger): boolean {
+        logger.debug(`Deleting user ${id}`);
         return this.users.delete(id);
     }
 }

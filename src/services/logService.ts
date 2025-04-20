@@ -13,7 +13,7 @@ export class LogService {
      * @param res - Express response
      */
     getLogsByRequestId(req: Request, res: Response): void {
-        const requestId: string = req.requestId.toString()
+        const requestId: string = req.params.requestId.toString()
         if (!fs.existsSync(LOG_FILE_PATH)) {
             res.json({});
             return;
@@ -22,15 +22,9 @@ export class LogService {
         const logs: LogData[] = [];
         fs.createReadStream(LOG_FILE_PATH)
             .pipe(csvParser())
-            .on('data', (data: any) => {
+            .on('data', (data: LogData) => {
                 if (data.requestId === requestId) {
-                    logs.push({
-                        requestId: data.requestId,
-                        endpointPath: data.endpointPath,
-                        logLevel: data.logLevel,
-                        timestamp: data.timestamp,
-                        logContent: data.logContent
-                    });
+                    logs.push(data);
                 }
             })
             .on('end', () => {

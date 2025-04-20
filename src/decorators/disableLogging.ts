@@ -6,8 +6,8 @@ import { Request, Response, NextFunction } from 'express';
  */
 export function DisableLogging() {
     return function (
-        target: any,
-        propertyKey: string,
+        target: Object,
+        propertyKey: string | symbol,
         descriptor: PropertyDescriptor
     ) {
         const originalMethod = descriptor.value;

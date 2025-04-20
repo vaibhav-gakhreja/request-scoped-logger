@@ -34,6 +34,18 @@ export interface LogData {
 }
 
 /**
+ * Ensuring that the log content is in correct JSON format
+ * this will avoid losing data during serialization.
+ */
+type JsonSerializable =
+    | string
+    | number
+    | boolean
+    | null
+    | JsonSerializable[]
+    | { [key: string]: JsonSerializable };
+
+/**
  * Logger class for request-scoped logging
  */
 export class RequestLogger {
@@ -65,7 +77,7 @@ export class RequestLogger {
      * @param message - Message to log
      * @param metadata - Additional metadata to include
      */
-    debug(message: string, metadata: Record<string, any> = {}): void {
+    debug(message: string, metadata: JsonSerializable = {}): void {
         this._log('DEBUG', message, metadata);
     }
 
@@ -74,7 +86,7 @@ export class RequestLogger {
      * @param message - Message to log
      * @param metadata - Additional metadata to include
      */
-    info(message: string, metadata: Record<string, any> = {}): void {
+    info(message: string, metadata: JsonSerializable = {}): void {
         this._log('INFO', message, metadata);
     }
 
@@ -83,7 +95,7 @@ export class RequestLogger {
      * @param message - Message to log
      * @param metadata - Additional metadata to include
      */
-    access(message: string, metadata: Record<string, any> = {}): void {
+    access(message: string, metadata: JsonSerializable = {}): void {
         this._log('ACCESS', message, metadata);
     }
 
@@ -92,8 +104,7 @@ export class RequestLogger {
      * @param message - Message to log
      * @param metadata - Additional metadata or Error object to include
      */
-    error(message: string, metadata: Record<string, any> | Error = {}): void {
-        // todo this can be improved
+    error(message: string, metadata: JsonSerializable | Error = {}): void {
         // Handle Error objects to avoid losing data during serialization
         if (metadata instanceof Error) {
             metadata = {
@@ -102,7 +113,7 @@ export class RequestLogger {
                 stack: metadata.stack
             };
         }
-        this._log('ERROR', message, metadata);
+        this._log('ERROR', message, metadata as JsonSerializable);
     }
 
     /**
@@ -112,7 +123,7 @@ export class RequestLogger {
      * @param message - Message to log
      * @param metadata - Additional metadata
      */
-    private _log(level: LogLevel, message: string, metadata: Record<string, any>): void {
+    private _log(level: LogLevel, message: string, metadata: JsonSerializable): void {
         if(this.disableLogging) return;
         const timestamp = new Date().toISOString();
         const logData: LogData = {
@@ -122,7 +133,7 @@ export class RequestLogger {
             timestamp,
             logContent: JSON.stringify({
                 message,
-                ...metadata
+                metadata
             })
         };
 

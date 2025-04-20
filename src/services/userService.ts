@@ -1,5 +1,7 @@
 import { UserDTO } from '../dto/userDto';
 import { UserDAO } from '../dao/userDao';
+import RequestLogger from "../logger/logger";
+import Logger from "../logger/logger";
 
 /**
  * Service for User entity business logic
@@ -18,8 +20,9 @@ export class UserService {
      * Get all users
      * @returns Array of users
      */
-    getAllUsers(): UserDTO[] {
-        return this.userDAO.findAll();
+    getAllUsers(logger: RequestLogger): UserDTO[] {
+        logger.info(`Fetching all users`);
+        return this.userDAO.findAll(logger);
     }
 
     /**
@@ -27,8 +30,9 @@ export class UserService {
      * @param id - User ID
      * @returns User object or null if not found
      */
-    getUserById(id: string): UserDTO | null {
-        return this.userDAO.findById(id);
+    getUserById(id: string, logger: Logger): UserDTO | null {
+        logger.info(`Fetching user by ID: ${id}`);
+        return this.userDAO.findById(id, logger);
     }
 
     /**
@@ -36,9 +40,9 @@ export class UserService {
      * @param userData - User data
      * @returns Created user
      */
-    createUser(userData: any): UserDTO {
-        const userDTO = UserDTO.fromRequest(userData);
-        return this.userDAO.create(userDTO);
+    createUser(userDTO: UserDTO, logger: Logger): UserDTO {
+        logger.info(`Creating new user`);
+        return this.userDAO.create(userDTO, logger);
     }
 
     /**
@@ -47,8 +51,9 @@ export class UserService {
      * @param userData - User data to update
      * @returns Updated user or null if not found
      */
-    updateUser(id: string, userData: Partial<UserDTO>): UserDTO | null {
-        return this.userDAO.update(id, userData);
+    updateUser(id: string, userData: Partial<UserDTO>, logger: Logger): UserDTO | null {
+        logger.info(`Updating user ${id}`);
+        return this.userDAO.update(id, userData, logger);
     }
 
     /**
@@ -56,7 +61,8 @@ export class UserService {
      * @param id - User ID
      * @returns True if deleted, false if not found
      */
-    deleteUser(id: string): boolean {
-        return this.userDAO.delete(id);
+    deleteUser(id: string, logger: Logger): boolean {
+        logger.info(`Deleting user ${id}`);
+        return this.userDAO.delete(id, logger);
     }
 }
